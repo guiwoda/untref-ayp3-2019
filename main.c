@@ -7,7 +7,7 @@ int main(){
 
    int longitud;
 
-   printf("Ingresar cantidad de empleado: \n");
+   printf("Ingresar cantidad de empleados: \n");
 
    scanf("%d", &longitud);
 
