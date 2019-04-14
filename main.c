@@ -5,11 +5,9 @@
 
 int main(){
 
-    //HOLA
-
    int longitud;
 
-   printf("Ingrese la cantidad de empleados: \n");
+   printf("Ingresar cantidad de empleados: \n");
 
    scanf("%d", &longitud);
 
