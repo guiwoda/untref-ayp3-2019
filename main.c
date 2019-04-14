@@ -5,6 +5,8 @@
 
 int main(){
 
+    //HOLA
+
    int longitud;
 
    printf("Ingrese la cantidad de empleados: \n");
