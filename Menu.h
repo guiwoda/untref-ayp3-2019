@@ -26,7 +26,7 @@ void inicializarVector(Empleado vector[], int longitud){
    }
 }
 
-void agregarEmpleado(Empleado vector[]){
+void agregarEmpleado(Empleado vector[], int longitud){
 
    Empleado empleado;
 
@@ -34,22 +34,44 @@ void agregarEmpleado(Empleado vector[]){
 
    char apellidoAux[100];
 
-   printf("Ingresar Apellido:\n");
-   scanf("%s", apellidoAux);
-   printf("Ingresar Nombre:\n");
-   scanf("%s", nombreAux);
-   printf("Ingresar edad:\n");
-   scanf("%d", &empleado.edad);
-   printf("Ingresar dni:\n");
-   scanf("%d", &empleado.dni);
-   printf("Ingresar Legajo:\n");
-   scanf("%d", &empleado.legajo);
-   strcpy(empleado.apellido, apellidoAux);
-   strcpy(empleado.nombre, nombreAux);
+   int legajoAux;
 
-   vector[empleado.legajo] = empleado;
+    printf("Ingresar Legajo:\n");
 
-   printf("El Empleado fue ingresado correctamente\n");
+    scanf("%d", &legajoAux);
+
+    if(legajoAux < longitud)
+    {
+        empleado.legajo = legajoAux;
+
+        printf("%d \n",empleado.legajo);
+
+        printf("Ingresar Apellido:\n");
+        scanf("%s", apellidoAux);
+
+        printf("Ingresar Nombre:\n");
+        scanf("%s", nombreAux);
+
+        printf("Ingresar edad:\n");
+        scanf("%d", &empleado.edad);
+
+        printf("Ingresar dni:\n");
+        scanf("%d", &empleado.dni);
+
+        strcpy(empleado.apellido, apellidoAux);
+
+        strcpy(empleado.nombre, nombreAux);
+
+        vector[empleado.legajo] = empleado;
+
+        printf("El Empleado fue ingresado correctamente \n\n");
+    }
+    else
+    {
+        printf("El Numero de Legajo debe ser menor a la longitud del vector.\n Vuelva a ingresar los datos \n\n");
+
+        agregarEmpleado(vector, longitud);
+    }
 }
 
 void imprimirEmpleado(Empleado aImprimir){
@@ -62,9 +84,10 @@ void imprimirEmpleado(Empleado aImprimir){
          printf("\n");
 
 }
+
 void listarEmpleados(Empleado vector[], int longitud) {
 
-   printf("\nLISTA DE EMPLEADOS:\n\n");
+   //printf("\nLISTA DE EMPLEADOS:\n\n");
 
    int cantidadDeEmpleados = 0;
 
@@ -150,11 +173,9 @@ void reemplazarEmpleado(Empleado vector[]){
    printf("El Empleado fue ingresado correctamente\n");
 }
 
-void Salir()
-{
+void Salir(){
     printf("Programa Finalizado. \n");
-    system("pause");
-
+    system("exit");
 }
 
 void menu(Empleado vector[], int longitud) {
@@ -176,7 +197,7 @@ void menu(Empleado vector[], int longitud) {
       switch(opciones) {
 
          case 1:
-            agregarEmpleado(vector);
+            agregarEmpleado(vector, longitud);
          break;
 
          case 2:
