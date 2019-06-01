@@ -23,12 +23,6 @@ typedef struct nodo {
 typedef struct {
     // Nodo raíz del árbol
     Nodo *raiz;
-    // Nodo de ayuda para comparaciones
-    Nodo *nullnode;
-    // Nodo de ayuda para proceso de eliminación
-    Nodo *eliminado;
-    // Último nodo del árbol
-    Nodo *ultimo;
 } Arbol;
 
 /**

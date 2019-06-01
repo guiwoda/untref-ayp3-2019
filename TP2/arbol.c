@@ -16,7 +16,7 @@ Nodo* crearNodo(int valor) {
 Arbol* crearArbol() {
     Arbol *arbol = (Arbol*) malloc(sizeof(Arbol));
     if (arbol == NULL) return NULL;
-    arbol->raiz = arbol->eliminado = NULL;
+    arbol->raiz = NULL;
 
     return arbol;
 }
