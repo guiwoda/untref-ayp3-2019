@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
-#include <opencl-c.h>
 #include "arbol.h"
 
 Nodo* crearNodo(int valor) {
@@ -22,37 +21,69 @@ Arbol* crearArbol() {
     return arbol;
 }
 
-void eliminarNodo(Arbol *arbol, Nodo *nodo) {
+void eliminarNodo(Nodo *nodo) {
     assert(nodo);
     if (nodo == NULL) return;
-    if (nodo->izq != NULL) eliminarNodo(arbol, nodo->izq);
-    if (nodo->der != NULL) eliminarNodo(arbol, nodo->der);
+    if (nodo->izq != NULL) eliminarNodo(nodo->izq);
+    if (nodo->der != NULL) eliminarNodo(nodo->der);
     free(nodo);
 }
 
 void eliminarArbol(Arbol *arbol) {
     assert(arbol && arbol->raiz);
-    eliminarNodo(arbol, arbol->raiz);
+    eliminarNodo(arbol->raiz);
     free(arbol);
 }
 
+/**
+ * Rotación a la derecha para reemplazar un "link horizontal" a izquierda con un "link horizontal" a la derecha.
+ * La torsión mantiene el nivel de los nodos.
+ *
+ * Ejemplo:
+ *
+ *       |          |
+ *   A - B    ->    A - B
+ *  /   / \        /   / \
+ * 0   1   2      0   1   2
+ * @param nodo
+ * @return nodo
+ */
 Nodo* torsion(Nodo *nodo) {
-    if (nodo->izq == NULL || nodo->nivel != nodo->izq->nivel) return nodo;
+    if (nodo == NULL || nodo->izq == NULL || nodo->nivel != nodo->izq->nivel) return nodo;
     Nodo *izq = nodo->izq;
     nodo->izq = izq->der;
     izq->der = nodo;
-    nodo = izq;
-    return nodo;
+    return izq;
 }
 
+
+/**
+ * Rotación a la izquierda y aumento de nivel para reemplazar un subárbol con dos o más "links horizontales" a
+ * la derecha con otro de dos links menos.
+ *
+ * Ejemplo:
+ *
+ *   |                      |
+ *   |                    - B -
+ *   |                   /     \
+ *   A - B - C    ->    A       C
+ *  /   /   / \        / \     / \
+ * 0   1   2   3      0   1   2   3
+ *
+ * @param nodo
+ * @return nodo
+ */
 Nodo* division(Nodo *nodo) {
-    if (nodo->der == NULL || nodo->der->der == NULL || nodo->der->der->nivel != nodo->nivel) return nodo;
+    if (nodo == NULL || nodo->der == NULL || nodo->der->der == NULL || nodo->der->der->nivel != nodo->nivel) return nodo;
     Nodo *der = nodo->der;
     nodo->der = der->izq;
     der->izq = nodo;
-    nodo = der;
-    nodo->nivel++;
-    return nodo;
+    der->nivel++;
+    return der;
+}
+
+int min(int a, int b) {
+    return a < b? a : b;
 }
 
 Nodo* buscarValor(Arbol *arbol, Nodo *nodo, int valor) {
@@ -68,8 +99,7 @@ Nodo* buscar(Arbol *arbol, int valor) {
 
 Nodo* insertarBalanceado(Arbol *arbol, Nodo *nodo, int valor) {
     if (nodo == NULL) {
-        nodo = crearNodo(valor);
-        return nodo;
+        return crearNodo(valor);
     }
 
     if (valor < nodo->valor) {
@@ -87,50 +117,46 @@ void insertar(Arbol *arbol, int valor) {
     arbol->raiz = insertarBalanceado(arbol, arbol->raiz, valor);
 }
 
+int nivel(Nodo *nodo) {
+    if (nodo == NULL) return 0;
+    return nodo->nivel;
+}
+
 Nodo* eliminarBalanceado(Arbol *arbol, Nodo *nodo, int valor) {
     if (nodo == NULL) return nodo;
 
-    if (nodo->valor == valor) {
-        if (nodo->izq != NULL) {
-            // Busco predecesor y lo roto con el actual.
-            Nodo *temp = nodo->izq;
-            while (temp->der != NULL) temp = temp->der;
-            nodo->valor = temp->valor;
-            nodo->izq = eliminarBalanceado(arbol, nodo->izq, nodo->valor);
-        } else if (nodo->der != NULL) {
-            // Busco sucesor y lo roto con el actual.
-            Nodo *temp = nodo->der;
-            while (temp->izq != NULL) temp = temp->izq;
-            nodo->valor = temp->valor;
-            nodo->der = eliminarBalanceado(arbol, nodo->der, nodo->valor);
-        } else {
-            // No hay predecesor ni sucesor.
-            return NULL;
-        }
-    } else if (valor < nodo->valor) {
+    if (valor < nodo->valor) {
         nodo->izq = eliminarBalanceado(arbol, nodo->izq, valor);
     } else if (valor > nodo->valor) {
         nodo->der = eliminarBalanceado(arbol, nodo->der, valor);
-    }
-
-    if (nodo->izq != NULL && nodo->der != NULL) {
-        if (nodo->nivel == min(nodo->izq->nivel, nodo->der->nivel) + 1) {
-
+    } else {
+        if (nodo->izq == NULL && nodo->der == NULL) {
+            // Caso hoja.
+            eliminarNodo(nodo);
+            return NULL;
         }
 
-        if (nodo == arbol->ultimo && arbol->eliminado != NULL && valor == arbol->eliminado->valor) {
-            arbol->eliminado->valor = nodo->valor;
-            arbol->eliminado = NULL;
-            nodo = nodo->der;
-            free(arbol->ultimo);
-        } else if (nodo->izq->nivel < nodo->nivel - 1 || nodo->der->nivel < nodo->nivel - 1) {
-            nodo->nivel--;
-            if (nodo->der->nivel > nodo->nivel) nodo->der->nivel = nodo->nivel;
-            nodo = torsion(nodo);
-            nodo->der = torsion(nodo->der);
-            nodo->der->der = torsion(nodo->der->der);
-            nodo = division(nodo);
-            nodo->der = division(nodo->der);
+        if (nodo->izq == NULL) {
+            // Busco sucesor y lo roto con el actual.
+            Nodo *temp = nodo->der;
+            while (temp->izq != NULL) temp = temp->izq;
+            nodo->der = eliminarBalanceado(arbol, nodo->der, temp->valor);
+            nodo->valor = temp->valor;
+        } else {
+            // Busco predecesor y lo roto con el actual.
+            Nodo *temp = nodo->izq;
+            while (temp->der != NULL) temp = temp->der;
+            nodo->izq = eliminarBalanceado(arbol, nodo->izq, temp->valor);
+            nodo->valor = temp->valor;
+        }
+    }
+
+    int nivelCandidato = min(nivel(nodo->izq), nivel(nodo->der)) + 1;
+
+    if (nivelCandidato < nivel(nodo)) {
+        nodo->nivel = nivelCandidato;
+        if (nodo->der != NULL && nivelCandidato < nivel(nodo->der)) {
+            nodo->der->nivel = nivelCandidato;
         }
     }
 

@@ -65,10 +65,18 @@ void buscarElemento(Arbol *arbol) {
     Nodo *nodo = buscar(arbol, valor);
 
     if (nodo != NULL) {
-        printf("Encontrado valor %d en nivel %d.\n\n", valor, nodo->nivel);
+        printf("Encontrado valor %d en nivel %d. ", valor, nodo->nivel);
+        if (nodo->izq != NULL) {
+            printf("Izquierda: %d. ", nodo->izq->valor);
+        }
+        if (nodo->der != NULL) {
+            printf("Derecha: %d", nodo->der->valor);
+        }
     } else {
         printf("Valor %d no encontrado.\n\n", valor);
     }
+
+    printf("\n\n");
 }
 
 void salir() {
