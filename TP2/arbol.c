@@ -182,9 +182,9 @@ void preOrder(Arbol *arbol, void (*callback)(Nodo*)) {
 void inOrderNodo(Nodo *nodo, void (*callback)(Nodo*)) {
     if (nodo == NULL) return;
 
-    preOrderNodo(nodo->izq, callback);
+    inOrderNodo(nodo->izq, callback);
     callback(nodo);
-    preOrderNodo(nodo->der, callback);
+    inOrderNodo(nodo->der, callback);
 }
 
 void inOrder(Arbol *arbol, void (*callback)(Nodo*)) {
@@ -194,8 +194,8 @@ void inOrder(Arbol *arbol, void (*callback)(Nodo*)) {
 void postOrderNodo(Nodo *nodo, void (*callback)(Nodo*)) {
     if (nodo == NULL) return;
 
-    preOrderNodo(nodo->izq, callback);
-    preOrderNodo(nodo->der, callback);
+    postOrderNodo(nodo->izq, callback);
+    postOrderNodo(nodo->der, callback);
     callback(nodo);
 }
 
