@@ -3,25 +3,22 @@
 
 #include <stdlib.h>
 #include <limits.h>
-#include <time.h>
+#include "common.h"
 
 typedef struct {
     unsigned int id;
     char *nombre;
-    time_t nacimiento;
+    Fecha *nacimiento;
     unsigned int referente_id;
 } Cliente;
 
-typedef struct {
-    Cliente *prev;
-    Cliente *current;
-    Cliente *next;
-} Clientes;
+typedef struct _clientes Clientes;
 
-/**
- * @return el próximo ID a usar para un cliente.
- */
-unsigned int cliente_proximo_id();
+struct _clientes {
+    Clientes *prev;
+    Cliente *cliente;
+    Clientes *next;
+};
 
 /**
  * Agrega un cliente con referido.
@@ -32,7 +29,7 @@ unsigned int cliente_proximo_id();
  *
  * @return el cliente agregado.
  */
-Cliente* cliente_nuevo_con_referido(char *nombre, time_t nacimiento, int referente_id);
+Cliente* cliente_nuevo_con_referido(char *nombre, Fecha *nacimiento, int referente_id);
 
 /**
  * Agrega un cliente.
@@ -42,7 +39,7 @@ Cliente* cliente_nuevo_con_referido(char *nombre, time_t nacimiento, int referen
  *
  * @return el cliente agregado.
  */
-Cliente* cliente_nuevo(char *nombre, time_t nacimiento);
+Cliente* cliente_nuevo(char *nombre, Fecha *nacimiento);
 
 /**
  * Busca un cliente en el índice.
@@ -66,5 +63,10 @@ Clientes* cliente_buscar_nombre(char *busqueda);
  * @return los clientes encontrados que concuerden con la búsqueda.
  */
 Clientes* cliente_buscar_edad_rango(int min, int max);
+
+/**
+ * Limpia toda la base de datos de clientes.
+ */
+void cliente_borrar_todo();
 
 #endif //TPFINAL_CLIENTES_H

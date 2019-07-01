@@ -1,11 +1,15 @@
 #include "clientes.h"
 
 static unsigned int CLIENTES_LAST_ID = 0;
-unsigned int cliente_proximo_id() {
+
+/**
+ * @return el próximo ID a usar para un cliente.
+ */
+static unsigned int cliente_proximo_id() {
     return ++CLIENTES_LAST_ID;
 }
 
-Cliente* cliente_nuevo_con_referido(char *nombre, time_t nacimiento, int referente_id) {
+Cliente* cliente_nuevo_con_referido(char *nombre, Fecha *nacimiento, int referente_id) {
     Cliente *cliente = (Cliente*) malloc(sizeof(Cliente));
     cliente->id = cliente_proximo_id();
     cliente->nombre = nombre;
@@ -15,7 +19,7 @@ Cliente* cliente_nuevo_con_referido(char *nombre, time_t nacimiento, int referen
     return cliente;
 }
 
-Cliente* cliente_nuevo(char *nombre, time_t nacimiento) {
+Cliente* cliente_nuevo(char *nombre, Fecha *nacimiento) {
     return cliente_nuevo_con_referido(nombre, nacimiento, 0);
 }
 
@@ -29,4 +33,10 @@ Clientes* cliente_buscar_nombre(char *busqueda) {
 
 Clientes* cliente_buscar_edad_rango(int min, int max) {
     return NULL;
+}
+
+void cliente_borrar_todo() {
+    // Borrar persistentes...
+
+    CLIENTES_LAST_ID = 0;
 }

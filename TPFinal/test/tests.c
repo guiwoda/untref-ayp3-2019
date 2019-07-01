@@ -3,20 +3,38 @@
 void test_cliente_nuevo(void **state) {
     (void) state;
 
-    struct tm nacimiento;
-    nacimiento.tm_year = 1986 - 1900;
-    nacimiento.tm_mon = 7 - 1;
-    nacimiento.tm_mday = 7;
-    nacimiento.tm_hour = nacimiento.tm_min = nacimiento.tm_sec = 0;
-
     char *nombre = "Guido Contreras Woda";
-    Cliente *guido = cliente_nuevo(nombre, mktime(&nacimiento));
+    Fecha *nacimiento = una_fecha(1986, 7, 7);
+    Cliente *guido = cliente_nuevo(nombre, nacimiento);
 
     assert_int_equal(1, guido->id);
     assert_string_equal(nombre, guido->nombre);
-    assert_int_equal(1986 - 1900, gmtime(&guido->nacimiento)->tm_year);
-    assert_int_equal(7 - 1, gmtime(&guido->nacimiento)->tm_mon);
-    assert_int_equal(7, gmtime(&guido->nacimiento)->tm_mday);
+    assert_int_equal(1986 - 1900, guido->nacimiento->tm_year);
+    assert_int_equal(7 - 1, guido->nacimiento->tm_mon);
+    assert_int_equal(7, guido->nacimiento->tm_mday);
+}
+
+void test_clientes_nuevos(void **state) {
+    (void) state;
+
+    Clientes *clientes = (Clientes*) malloc(sizeof(Clientes));
+
+    int max = 50;
+    for (int i = 0; i < max; i++) {
+        clientes->cliente = cliente_nuevo(nombre_al_azar(), fecha_al_azar());
+        clientes->next = (Clientes*) malloc(sizeof(Clientes));
+        clientes->next->prev = clientes;
+
+        printf("Cliente: Nombre [%s], ID [%d]\n", clientes->cliente->nombre, clientes->cliente->id);
+        clientes = clientes->next;
+    }
+
+    assert_int_equal(50, clientes->prev->cliente->id);
+}
+
+int teardown(void **state) {
+    cliente_borrar_todo();
+    return 0;
 }
 
 int main(void) {
