@@ -3,20 +3,6 @@
 void stmt_a_cliente(Cliente *cliente, sqlite3_stmt *stmt);
 void stmt_a_clientes(Clientes **clientes, Clientes *prev, sqlite3_stmt *stmt);
 
-static int last_insert_rowid() {
-    const char *last_id_query = "SELECT last_insert_rowid();";
-    const size_t last_id_query_length = strlen(last_id_query) + 1;
-
-    static sqlite3_stmt *last_id_stmt = NULL;
-    if (last_id_stmt == NULL) {
-        sqlite3_prepare_v2(db(), last_id_query, last_id_query_length, &last_id_stmt, NULL);
-    } else {
-        sqlite3_reset(last_id_stmt);
-    }
-    sqlite3_step(last_id_stmt);
-    return sqlite3_column_int(last_id_stmt, 0);
-}
-
 static void insert_into_clientes(Cliente *cliente) {
     const char *insert_query = "INSERT INTO clientes(nombre, nacimiento, referente_id) VALUES(?, ?, ?);";
     const size_t insert_query_length = strlen(insert_query) + 1;
@@ -64,7 +50,7 @@ static void select_cliente_by_id(int id, Cliente **cliente) {
 void stmt_a_cliente(Cliente *cliente, sqlite3_stmt *stmt) {
     cliente->id = sqlite3_column_int(stmt, 0);
     cliente->nombre = (char *) sqlite3_column_text(stmt, 1);
-    time_t nac = (time_t) sqlite3_column_int64(stmt, 2);
+    time_t nac = (time_t) sqlite3_column_int(stmt, 2);
     cliente->nacimiento = (Fecha *) gmtime(&nac);
     cliente->referente_id = sqlite3_column_int(stmt, 3);
 }

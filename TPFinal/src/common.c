@@ -1,5 +1,19 @@
 #include "common.h"
 
+int last_insert_rowid() {
+    const char *last_id_query = "SELECT last_insert_rowid();";
+    const size_t last_id_query_length = strlen(last_id_query) + 1;
+
+    static sqlite3_stmt *last_id_stmt = NULL;
+    if (last_id_stmt == NULL) {
+        sqlite3_prepare_v2(db(), last_id_query, last_id_query_length, &last_id_stmt, NULL);
+    } else {
+        sqlite3_reset(last_id_stmt);
+    }
+    sqlite3_step(last_id_stmt);
+    return sqlite3_column_int(last_id_stmt, 0);
+}
+
 void ejecutarEnDbOFallar(sqlite3 *database, char *sql) {
     char *error = NULL;
     int res = sqlite3_exec(database, sql, 0, 0, &error);
@@ -26,7 +40,7 @@ sqlite3 *db() {
                 "CREATE TABLE IF NOT EXISTS clientes("
                 "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
                 "nombre CHARACTER VARYING NOT NULL, "
-                "nacimiento TIMESTAMP WITHOUT TIME ZONE,"
+                "nacimiento INTEGER NOT NULL,"
                 "referente_id INTEGER);");
 //                "-- FOREIGN KEY(referente_id) REFERENCES clientes(id));");
 
@@ -38,15 +52,19 @@ sqlite3 *db() {
                             "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
                             "cliente_id INTEGER NOT NULL, "
                             "monto INTEGER NOT NULL, "
-                            "fecha_pedido TIMESTAMP WITHOUT TIME ZONE);");
+                            "pedido INTEGER NOT NULL);");
 //                            "FOREIGN KEY(cliente_id) REFERENCES clientes(id))");
+
+        ejecutarEnDbOFallar(database, "CREATE INDEX IF NOT EXISTS creditos_cliente_id ON creditos(cliente_id);");
 
         ejecutarEnDbOFallar(database, "CREATE TABLE IF NOT EXISTS pagos("
                             "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
                             "credito_id INTEGER NOT NULL,"
-                            "pago INTEGER,"
-                            "fecha TIMESTAMP WITHOUT TIME ZONE);");
+                            "monto INTEGER NOT NULL,"
+                            "pago INTEGER NOT NULL);");
 //                            "FOREIGN KEY(credito_id) REFERENCES creditos(id));");
+
+        ejecutarEnDbOFallar(database, "CREATE INDEX IF NOT EXISTS pagos_credito_id ON pagos(credito_id);");
         ejecutarEnDbOFallar(database, "CREATE INDEX IF NOT EXISTS pagos_pago ON pagos(pago);");
 
         db_init = 1;

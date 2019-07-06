@@ -1,5 +1,6 @@
 #include "common.h"
 #include "clientes.h"
+#include "creditos.h"
 
 static void menu();
 static void pedirDatosCliente(char *nombre, Fecha *nacimiento);
@@ -9,6 +10,12 @@ static void buscarClientePorNombreMenu();
 static void buscarClientePorEdadMenu();
 static void buscarClientesMenu();
 static void fecha_a_texto(Fecha *fecha, char *res);
+
+void agregarCreditoMenu(Cliente *cliente);
+
+Fecha *fecha_hoy();
+
+void mostrarCreditos(Creditos *creditos);
 
 static void agregarReferidoMenu(Cliente *referente) {
     char *nombre = (char*) malloc(sizeof(char));
@@ -96,20 +103,16 @@ static void buscarClientePorNombreMenu() {
 }
 
 static void buscarClientePorIdMenu() {
-    char *intmax = NULL;
-    sprintf(intmax, "%d", INT_MAX);
-    const size_t max_int_length = strlen(intmax);
-
-    char *id = NULL;
+    int id;
     printf("Ingrese el ID...\n");
-    fgets(id, max_int_length, stdin);
+    scanf("%d", &id);
 
-    Cliente *cliente = cliente_indice(atoi(id));
+    Cliente *cliente = cliente_indice(id);
 
     if (cliente != NULL) {
         mostrarCliente(cliente);
     } else {
-        printf("Cliente con ID [%s] no encontrado.", id);
+        printf("Cliente con ID [%d] no encontrado.", id);
     }
 }
 
@@ -160,13 +163,12 @@ void mostrarCliente(Cliente *cliente) {
     char fecha[11];
     fecha_a_texto(cliente->nacimiento, fecha);
 
-    time_t today = time(NULL);
-    Fecha *todayTm = localtime(&today);
-    int edad = todayTm->tm_year - cliente->nacimiento->tm_year;
+    Fecha *hoy = fecha_hoy();
+    int edad = hoy->tm_year - cliente->nacimiento->tm_year;
     if (
-            todayTm->tm_mon < cliente->nacimiento->tm_mon || (
-                    todayTm->tm_mon == cliente->nacimiento->tm_mon &&
-                    todayTm->tm_mday < cliente->nacimiento->tm_mday)) {
+            hoy->tm_mon < cliente->nacimiento->tm_mon || (
+                    hoy->tm_mon == cliente->nacimiento->tm_mon &&
+                    hoy->tm_mday < cliente->nacimiento->tm_mday)) {
         edad--;
     }
 
@@ -177,6 +179,9 @@ void mostrarCliente(Cliente *cliente) {
         referente = cliente_indice(cliente->referente_id);
         printf("Referido por: %s\n", referente->nombre);
     }
+
+    Creditos *creditos = credito_por_cliente(cliente);
+    mostrarCreditos(creditos);
 
     char opcion;
     do {
@@ -199,12 +204,44 @@ void mostrarCliente(Cliente *cliente) {
                     mostrarCliente(referente);
                 }
                 break;
+            case '3':
+                agregarCreditoMenu(cliente);
+                break;
             case '0':
             default:
                 break;
         }
 
     } while (opcion != '0');
+}
+
+void mostrarCreditos(Creditos *creditos) {
+    if (creditos == NULL) {
+        return;
+    }
+
+    char fecha[11];
+    fecha_a_texto(creditos->credito->pedido, fecha);
+
+    printf("Credito por $%d tomado el dia %s\n", creditos->credito->monto, fecha);
+    mostrarCreditos(creditos->next);
+}
+
+Fecha *fecha_hoy() {
+    time_t today = time(NULL);
+    Fecha *todayTm = localtime(&today);
+    return todayTm;
+}
+
+void agregarCreditoMenu(Cliente *cliente) {
+    int monto = 0;
+    printf("Ingrese el monto...\n");
+    scanf("%d", &monto);
+
+    // TODO: Validar monto
+    credito_nuevo(cliente, monto, fecha_hoy());
+
+    mostrarCliente(cliente);
 }
 
 void fecha_a_texto(Fecha *fecha, char *res) {
