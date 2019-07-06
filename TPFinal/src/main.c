@@ -191,6 +191,7 @@ void mostrarCliente(Cliente *cliente) {
             printf("\n2- Ir al referido");
         }
 
+        printf("\n3- Agregar credito");
         printf("\n0- Volver");
 
         scanf("%s", &opcion);

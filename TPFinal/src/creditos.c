@@ -5,11 +5,13 @@ static void stmt_a_creditos(Creditos **creditos, Creditos *prev, sqlite3_stmt *s
 static void stmt_a_credito(Credito *credito, sqlite3_stmt *stmt);
 
 static void select_creditos_by_cliente(Cliente *cliente, Creditos **creditos) {
-    const char *select_all_query = "SELECT id, cliente_id, monto, pedido FROM creditos;";
+    const char *select_all_query = "SELECT id, cliente_id, monto, pedido FROM creditos WHERE cliente_id = ?;";
     const size_t select_all_query_length = strlen(select_all_query) + 1;
 
     sqlite3_stmt *select_all_stmt = NULL;
     sqlite3_prepare_v2(db(), select_all_query, select_all_query_length, &select_all_stmt, NULL);
+
+    sqlite3_bind_int(select_all_stmt, 1, cliente->id);
 
     int row = sqlite3_step(select_all_stmt);
     if (row == SQLITE_ROW) {
@@ -34,7 +36,7 @@ static void stmt_a_credito(Credito *credito, sqlite3_stmt *stmt) {
     credito->cliente_id = sqlite3_column_int(stmt, 1);
     credito->monto = sqlite3_column_int(stmt, 2);
     time_t fecha = (time_t) sqlite3_column_int(stmt, 3);
-    credito->pedido = (Fecha *) gmtime(&fecha);
+    credito->pedido = gmtime(&fecha);
 }
 
 static void insert_credito(Credito *credito) {
