@@ -4,16 +4,11 @@
 static void menu();
 static void pedirDatosCliente(char *nombre, Fecha *nacimiento);
 static void mostrarCliente(Cliente *cliente);
-
 static void buscarClientePorIdMenu();
-
 static void buscarClientePorNombreMenu();
-
 static void buscarClientePorEdadMenu();
-
 static void buscarClientesMenu();
-
-void fecha_a_texto(Fecha *fecha, char *res);
+static void fecha_a_texto(Fecha *fecha, char *res);
 
 static void agregarReferidoMenu(Cliente *referente) {
     char *nombre = (char*) malloc(sizeof(char));
@@ -49,7 +44,7 @@ static void buscarClienteMenu() {
                "\n0- Volver"
                "\nIngrese una Opcion: ");
 
-        while ((opcion = getchar()) != '\n' && opcion != EOF) {}
+        scanf("%s", &opcion);
 
         switch(opcion) {
             case '1':
@@ -128,7 +123,7 @@ void menu() {
                "\n0- Salir"
                "\nIngrese una Opcion: ");
 
-        while ((opcion = getchar()) != '\n' && opcion != EOF) {}
+        scanf("%s", &opcion);
 
         switch(opcion) {
             case '1':
@@ -150,11 +145,11 @@ void menu() {
 
 void pedirDatosCliente(char *nombre, Fecha *nacimiento) {
     printf("Ingrese el nombre...\n");
-    fgets(nombre, 255, stdin);
+    scanf("%s", nombre);
 
     char *nacimientoUnparsed = (char *) malloc(sizeof(char));
     printf("Ingrese la fecha de nacimiento...\n");
-    fgets(nacimientoUnparsed, 11, stdin);
+    scanf("%s", nacimientoUnparsed);
 
     strptime(nacimientoUnparsed, "%d/%m/%Y", nacimiento);
 }
@@ -185,15 +180,15 @@ void mostrarCliente(Cliente *cliente) {
 
     char opcion;
     do {
-        const char *menuSinReferido = "\n1- Agregar referido\n0- Volver";
+        printf("\n1- Agregar referido");
 
-        const char *menuConReferido = "\n1- Agregar referido"
-                                "\n2- Ir al referido"
-                                "\n0- Volver";
+        if (cliente->referente_id != 0) {
+            printf("\n2- Ir al referido");
+        }
 
-        printf("%s", cliente->referente_id ? menuConReferido : menuSinReferido);
+        printf("\n0- Volver");
 
-        while ((opcion = getchar()) != '\n' && opcion != EOF) {}
+        scanf("%s", &opcion);
 
         switch(opcion) {
             case '1':
@@ -203,6 +198,7 @@ void mostrarCliente(Cliente *cliente) {
                 if (referente != NULL) {
                     mostrarCliente(referente);
                 }
+                break;
             case '0':
             default:
                 break;

@@ -13,9 +13,7 @@ static int last_insert_rowid() {
     } else {
         sqlite3_reset(last_id_stmt);
     }
-    int result = sqlite3_step(last_id_stmt);
-    printf("\n -- SQLite debug: %s, Result: %d\n", last_id_query, result);
-
+    sqlite3_step(last_id_stmt);
     return sqlite3_column_int(last_id_stmt, 0);
 }
 
@@ -30,9 +28,7 @@ static void insert_into_clientes(Cliente *cliente) {
     sqlite3_bind_int64(insert_stmt, 2, timegm(cliente->nacimiento));
     sqlite3_bind_int(insert_stmt, 3, cliente->referente_id);
 
-    int result = sqlite3_step(insert_stmt);
-    printf("\n -- SQLite debug: %s, Result: %d\n", insert_query, result);
-
+    sqlite3_step(insert_stmt);
     cliente->id = last_insert_rowid();
 }
 
@@ -44,8 +40,6 @@ static void select_clientes(Clientes **clientes) {
     sqlite3_prepare_v2(db(), select_all_query, select_all_query_length, &select_all_stmt, NULL);
 
     int row = sqlite3_step(select_all_stmt);
-    printf("\n -- SQLite debug: %s, Result: %d\n", select_all_query, row);
-
     if (row == SQLITE_ROW) {
         stmt_a_clientes(clientes, NULL, select_all_stmt);
     }
@@ -60,8 +54,6 @@ static void select_cliente_by_id(int id, Cliente **cliente) {
 
     sqlite3_bind_int(select_by_id_stmt, 1, id);
     int row = sqlite3_step(select_by_id_stmt);
-
-    printf("\n -- SQLite debug: %s, Result: %d\n", select_by_id_query, row);
 
     if (row == SQLITE_ROW) {
         *cliente = (Cliente *) malloc(sizeof(Cliente));
