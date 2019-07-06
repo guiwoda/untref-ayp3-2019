@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include "common.h"
+#include <string.h>
 
 typedef struct {
     unsigned int id;
@@ -40,6 +41,8 @@ Cliente* cliente_nuevo_con_referido(char *nombre, Fecha *nacimiento, int referen
  * @return el cliente agregado.
  */
 Cliente* cliente_nuevo(char *nombre, Fecha *nacimiento);
+
+Clientes* clientes();
 
 /**
  * Busca un cliente en el índice.
