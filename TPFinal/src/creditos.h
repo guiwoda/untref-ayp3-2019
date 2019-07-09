@@ -23,7 +23,7 @@ typedef struct {
     unsigned int id;
     unsigned int credito_id;
     unsigned int monto;
-    Fecha *pago;
+    Fecha *fecha_pago;
 } Pago;
 
 typedef struct _pagos Pagos;
@@ -38,5 +38,6 @@ struct _pagos {
 Credito *credito_nuevo(Cliente *cliente, int monto, Fecha *pedido);
 Pago *pago_nuevo(Credito *credito, int monto, Fecha *pago);
 Creditos *credito_por_cliente(Cliente *cliente);
+Pagos *pago_por_credito(Credito *credito);
 
 #endif //TPFINAL_CREDITOS_H

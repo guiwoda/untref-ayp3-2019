@@ -41,8 +41,8 @@ sqlite3 *db() {
                 "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
                 "nombre CHARACTER VARYING NOT NULL, "
                 "nacimiento INTEGER NOT NULL,"
-                "referente_id INTEGER);");
-//                "-- FOREIGN KEY(referente_id) REFERENCES clientes(id));");
+                "referente_id INTEGER, "
+                "FOREIGN KEY(referente_id) REFERENCES clientes(id));");
 
         ejecutarEnDbOFallar(database, "CREATE INDEX IF NOT EXISTS clientes_nombre ON clientes(nombre);");
         ejecutarEnDbOFallar(database, "CREATE INDEX IF NOT EXISTS clientes_nacimiento ON clientes(nacimiento);");
@@ -52,8 +52,8 @@ sqlite3 *db() {
                             "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
                             "cliente_id INTEGER NOT NULL, "
                             "monto INTEGER NOT NULL, "
-                            "pedido INTEGER NOT NULL);");
-//                            "FOREIGN KEY(cliente_id) REFERENCES clientes(id))");
+                            "pedido INTEGER NOT NULL, "
+                            "FOREIGN KEY(cliente_id) REFERENCES clientes(id))");
 
         ejecutarEnDbOFallar(database, "CREATE INDEX IF NOT EXISTS creditos_cliente_id ON creditos(cliente_id);");
 
@@ -61,16 +61,22 @@ sqlite3 *db() {
                             "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
                             "credito_id INTEGER NOT NULL,"
                             "monto INTEGER NOT NULL,"
-                            "pago INTEGER NOT NULL);");
-//                            "FOREIGN KEY(credito_id) REFERENCES creditos(id));");
+                            "fecha_pago INTEGER NOT NULL, "
+                            "FOREIGN KEY(credito_id) REFERENCES creditos(id));");
 
         ejecutarEnDbOFallar(database, "CREATE INDEX IF NOT EXISTS pagos_credito_id ON pagos(credito_id);");
-        ejecutarEnDbOFallar(database, "CREATE INDEX IF NOT EXISTS pagos_pago ON pagos(pago);");
+        ejecutarEnDbOFallar(database, "CREATE INDEX IF NOT EXISTS pagos_pago ON pagos(fecha_pago);");
 
         db_init = 1;
     }
 
     return database;
+}
+
+Fecha *fecha_hoy() {
+    time_t today = time(NULL);
+    Fecha *todayTm = localtime(&today);
+    return todayTm;
 }
 
 void salir() {

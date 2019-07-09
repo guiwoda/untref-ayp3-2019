@@ -8,7 +8,7 @@
 
 typedef struct {
     unsigned int id;
-    char *nombre;
+    const unsigned char *nombre;
     Fecha *nacimiento;
     unsigned int referente_id;
 } Cliente;
@@ -30,7 +30,7 @@ struct _clientes {
  *
  * @return el cliente agregado.
  */
-Cliente* cliente_nuevo_con_referido(char *nombre, Fecha *nacimiento, int referente_id);
+Cliente* cliente_nuevo_con_referido(const unsigned char *nombre, Fecha *nacimiento, int referente_id);
 
 /**
  * Agrega un cliente.
@@ -40,7 +40,7 @@ Cliente* cliente_nuevo_con_referido(char *nombre, Fecha *nacimiento, int referen
  *
  * @return el cliente agregado.
  */
-Cliente* cliente_nuevo(char *nombre, Fecha *nacimiento);
+Cliente* cliente_nuevo(const unsigned char *nombre, Fecha *nacimiento);
 
 Clientes* clientes();
 

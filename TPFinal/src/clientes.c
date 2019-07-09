@@ -10,7 +10,7 @@ static void insert_into_clientes(Cliente *cliente) {
     sqlite3_stmt *insert_stmt = NULL;
     sqlite3_prepare_v2(db(), insert_query, insert_query_length, &insert_stmt, NULL);
 
-    sqlite3_bind_text(insert_stmt, 1, cliente->nombre, -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert_stmt, 1, (const char *) cliente->nombre, -1, SQLITE_STATIC);
     sqlite3_bind_int64(insert_stmt, 2, timegm(cliente->nacimiento));
     sqlite3_bind_int(insert_stmt, 3, cliente->referente_id);
 
@@ -49,7 +49,7 @@ static void select_cliente_by_id(int id, Cliente **cliente) {
 
 void stmt_a_cliente(Cliente *cliente, sqlite3_stmt *stmt) {
     cliente->id = sqlite3_column_int(stmt, 0);
-    cliente->nombre = (char *) sqlite3_column_text(stmt, 1);
+    cliente->nombre = sqlite3_column_text(stmt, 1);
     time_t nac = (time_t) sqlite3_column_int(stmt, 2);
     cliente->nacimiento = (Fecha *) gmtime(&nac);
     cliente->referente_id = sqlite3_column_int(stmt, 3);
@@ -59,6 +59,7 @@ void stmt_a_clientes(Clientes **clientes, Clientes *prev, sqlite3_stmt *stmt) {
     *clientes = (Clientes*) malloc(sizeof(Clientes));
     (*clientes)->prev = prev;
     (*clientes)->cliente = (Cliente*) malloc(sizeof(Cliente));
+    (*clientes)->next = NULL;
     stmt_a_cliente((*clientes)->cliente, stmt);
 
     int next = sqlite3_step(stmt);
@@ -67,7 +68,7 @@ void stmt_a_clientes(Clientes **clientes, Clientes *prev, sqlite3_stmt *stmt) {
     }
 }
 
-Cliente* cliente_nuevo_con_referido(char *nombre, Fecha *nacimiento, int referente_id) {
+Cliente* cliente_nuevo_con_referido(const unsigned char *nombre, Fecha *nacimiento, int referente_id) {
     Cliente *cliente = (Cliente*) malloc(sizeof(Cliente));
     cliente->nombre = nombre;
     cliente->nacimiento = nacimiento;
@@ -77,7 +78,7 @@ Cliente* cliente_nuevo_con_referido(char *nombre, Fecha *nacimiento, int referen
     return cliente;
 }
 
-Cliente* cliente_nuevo(char *nombre, Fecha *nacimiento) {
+Cliente* cliente_nuevo(const unsigned char *nombre, Fecha *nacimiento) {
     return cliente_nuevo_con_referido(nombre, nacimiento, 0);
 }
 

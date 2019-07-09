@@ -3,43 +3,42 @@
 #include "creditos.h"
 
 static void menu();
-static void pedirDatosCliente(char *nombre, Fecha *nacimiento);
-static void mostrarCliente(Cliente *cliente);
-static void buscarClientePorIdMenu();
-static void buscarClientePorNombreMenu();
-static void buscarClientePorEdadMenu();
-static void buscarClientesMenu();
+static void menu_agregar_cliente();
+static void menu_buscar_cliente();
+static void menu_buscar_cliente_id();
+static void menu_buscar_cliente_nombre();
+static void menu_buscar_cliente_edad();
+static void menu_buscar_clientes();
+static void menu_agregar_credito(Cliente *cliente);
+static void menu_agregar_referido(Cliente *referente);
+static void pedir_datos_cliente(const unsigned char *nombre, Fecha *nacimiento);
+static void mostrar_cliente(Cliente *cliente);
+static void mostrar_creditos(Creditos *creditos);
 static void fecha_a_texto(Fecha *fecha, char *res);
 
-void agregarCreditoMenu(Cliente *cliente);
-
-Fecha *fecha_hoy();
-
-void mostrarCreditos(Creditos *creditos);
-
-static void agregarReferidoMenu(Cliente *referente) {
-    char *nombre = (char*) malloc(sizeof(char));
+static void menu_agregar_referido(Cliente *referente) {
+    const unsigned char *nombre = (const unsigned char*) malloc(sizeof(char));
     Fecha *nacimiento = (Fecha*) malloc(sizeof(Fecha));
 
-    pedirDatosCliente(nombre, nacimiento);
+    pedir_datos_cliente(nombre, nacimiento);
     
     Cliente *cliente = cliente_nuevo_con_referido(nombre, nacimiento, referente->id);
-    
-    mostrarCliente(cliente);
+
+    mostrar_cliente(cliente);
 }
 
-static void agregarClienteMenu() {
-    char *nombre = (char*) malloc(sizeof(char));
+static void menu_agregar_cliente() {
+    const unsigned char *nombre = (const unsigned char*) malloc(sizeof(char));
     Fecha *nacimiento = (Fecha*) malloc(sizeof(Fecha));
 
-    pedirDatosCliente(nombre, nacimiento);
+    pedir_datos_cliente(nombre, nacimiento);
 
     Cliente *cliente = cliente_nuevo(nombre, nacimiento);
 
-    mostrarCliente(cliente);
+    mostrar_cliente(cliente);
 }
 
-static void buscarClienteMenu() {
+static void menu_buscar_cliente() {
     char opcion;
 
     do {
@@ -55,16 +54,16 @@ static void buscarClienteMenu() {
 
         switch(opcion) {
             case '1':
-                buscarClientePorIdMenu();
+                menu_buscar_cliente_id();
                 break;
             case '2':
-                buscarClientePorNombreMenu();
+                menu_buscar_cliente_nombre();
                 break;
             case '3':
-                buscarClientePorEdadMenu();
+                menu_buscar_cliente_edad();
                 break;
             case '4':
-                buscarClientesMenu();
+                menu_buscar_clientes();
                 break;
 
             case '0':
@@ -75,34 +74,60 @@ static void buscarClienteMenu() {
     } while (opcion != '0');
 }
 
-static void mostrarClienteTabla(Cliente *cliente) {
+static void mostrar_cliente_tabla(Clientes *clientes) {
+    if (clientes == NULL) {
+        return;
+    }
+
     char fecha[11];
-    fecha_a_texto(cliente->nacimiento, fecha);
-    printf("| %d | %s | %s |\n", cliente->id, cliente->nombre, fecha);
+    fecha_a_texto(clientes->cliente->nacimiento, fecha);
+    printf("| %d | %s | %s |\n", clientes->cliente->id, clientes->cliente->nombre, fecha);
+    mostrar_cliente_tabla(clientes->next);
 }
 
-static void buscarClientesMenu() {
+static void menu_buscar_clientes() {
     Clientes *todos = clientes();
 
     if (todos != NULL) {
         printf("| ID | Nombre | Fecha de nacimiento |\n");
     }
 
-    while (todos != NULL) {
-        mostrarClienteTabla(todos->cliente);
-        todos = todos->next;
+    mostrar_cliente_tabla(todos);
+}
+
+static void menu_buscar_cliente_edad() {
+    int min, max;
+
+    printf("Edad minima...\n");
+    scanf("%d", &min);
+
+    printf("Edad maxima...\n");
+    scanf("%d", &max);
+
+    Clientes *todos = cliente_buscar_edad_rango(min, max);
+
+    if (todos != NULL) {
+        printf("| ID | Nombre | Fecha de nacimiento |\n");
     }
+
+    mostrar_cliente_tabla(todos);
 }
 
-static void buscarClientePorEdadMenu() {
+static void menu_buscar_cliente_nombre() {
+    char busqueda[255];
+    printf("Ingresar busqueda...\n");
+    scanf("%s", busqueda);
 
+    Clientes *todos = cliente_buscar_nombre(busqueda);
+
+    if (todos != NULL) {
+        printf("| ID | Nombre | Fecha de nacimiento |\n");
+    }
+
+    mostrar_cliente_tabla(todos);
 }
 
-static void buscarClientePorNombreMenu() {
-
-}
-
-static void buscarClientePorIdMenu() {
+static void menu_buscar_cliente_id() {
     int id;
     printf("Ingrese el ID...\n");
     scanf("%d", &id);
@@ -110,7 +135,7 @@ static void buscarClientePorIdMenu() {
     Cliente *cliente = cliente_indice(id);
 
     if (cliente != NULL) {
-        mostrarCliente(cliente);
+        mostrar_cliente(cliente);
     } else {
         printf("Cliente con ID [%d] no encontrado.", id);
     }
@@ -130,10 +155,10 @@ void menu() {
 
         switch(opcion) {
             case '1':
-                agregarClienteMenu();
+                menu_agregar_cliente();
                 break;
             case '2':
-                buscarClienteMenu();
+                menu_buscar_cliente();
                 break;
             case '0':
                 salir();
@@ -146,18 +171,18 @@ void menu() {
     } while (opcion != '0');
 }
 
-void pedirDatosCliente(char *nombre, Fecha *nacimiento) {
+void pedir_datos_cliente(const unsigned char *nombre, Fecha *nacimiento) {
     printf("Ingrese el nombre...\n");
-    scanf("%s", nombre);
+    scanf("%s", (char*) nombre);
 
-    char *nacimientoUnparsed = (char *) malloc(sizeof(char));
+    char nacimientoUnparsed[11];
     printf("Ingrese la fecha de nacimiento...\n");
     scanf("%s", nacimientoUnparsed);
 
     strptime(nacimientoUnparsed, "%d/%m/%Y", nacimiento);
 }
 
-void mostrarCliente(Cliente *cliente) {
+void mostrar_cliente(Cliente *cliente) {
     printf("Nombre: %s\n", cliente->nombre);
 
     char fecha[11];
@@ -181,7 +206,7 @@ void mostrarCliente(Cliente *cliente) {
     }
 
     Creditos *creditos = credito_por_cliente(cliente);
-    mostrarCreditos(creditos);
+    mostrar_creditos(creditos);
 
     char opcion;
     do {
@@ -194,19 +219,19 @@ void mostrarCliente(Cliente *cliente) {
         printf("\n3- Agregar credito");
         printf("\n0- Volver");
 
-        scanf("%s", &opcion);
+scanf("%s", &opcion);
 
         switch(opcion) {
             case '1':
-                agregarReferidoMenu(cliente);
+                menu_agregar_referido(cliente);
                 break;
             case '2':
                 if (referente != NULL) {
-                    mostrarCliente(referente);
+                    mostrar_cliente(referente);
                 }
                 break;
             case '3':
-                agregarCreditoMenu(cliente);
+                menu_agregar_credito(cliente);
                 break;
             case '0':
             default:
@@ -216,7 +241,7 @@ void mostrarCliente(Cliente *cliente) {
     } while (opcion != '0');
 }
 
-void mostrarCreditos(Creditos *creditos) {
+void mostrar_creditos(Creditos *creditos) {
     if (creditos == NULL) {
         return;
     }
@@ -225,16 +250,10 @@ void mostrarCreditos(Creditos *creditos) {
     fecha_a_texto(creditos->credito->pedido, fecha);
 
     printf("Credito por $%d tomado el dia %s\n", creditos->credito->monto, fecha);
-    mostrarCreditos(creditos->next);
+    mostrar_creditos(creditos->next);
 }
 
-Fecha *fecha_hoy() {
-    time_t today = time(NULL);
-    Fecha *todayTm = localtime(&today);
-    return todayTm;
-}
-
-void agregarCreditoMenu(Cliente *cliente) {
+void menu_agregar_credito(Cliente *cliente) {
     int monto = 0;
     printf("Ingrese el monto...\n");
     scanf("%d", &monto);
@@ -242,7 +261,7 @@ void agregarCreditoMenu(Cliente *cliente) {
     // TODO: Validar monto
     credito_nuevo(cliente, monto, fecha_hoy());
 
-    mostrarCliente(cliente);
+    mostrar_cliente(cliente);
 }
 
 void fecha_a_texto(Fecha *fecha, char *res) {
