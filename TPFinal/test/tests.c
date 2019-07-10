@@ -5,7 +5,7 @@ void test_cliente_nuevo(void **state) {
 
     char *nombre = "Guido Contreras Woda";
     Fecha *nacimiento = una_fecha(1986, 7, 7);
-    Cliente *guido = cliente_nuevo((const unsigned char*) nombre, nacimiento);
+    Cliente *guido = cliente_nuevo((unsigned char*) nombre, nacimiento);
 
     assert_int_equal(1, guido->id);
     assert_string_equal(nombre, guido->nombre);
@@ -17,12 +17,12 @@ void test_cliente_nuevo(void **state) {
 void test_clientes_nuevos(void **state) {
     (void) state;
 
-    Clientes *clientes = (Clientes*) malloc(sizeof(Clientes));
+    Clientes *clientes = malloc(sizeof(Clientes));
 
     int max = 50;
     for (int i = 0; i < max; i++) {
-        clientes->cliente = cliente_nuevo((const unsigned char*) nombre_al_azar(), fecha_al_azar());
-        clientes->next = (Clientes*) malloc(sizeof(Clientes));
+        clientes->cliente = cliente_nuevo((unsigned char*) nombre_al_azar(), fecha_al_azar());
+        clientes->next = malloc(sizeof(Clientes));
         clientes->next->prev = clientes;
 
         printf("Cliente: Nombre [%s], ID [%d]\n", clientes->cliente->nombre, clientes->cliente->id);

@@ -9,9 +9,9 @@ static void stmt_a_credito(Credito *credito, sqlite3_stmt *stmt) {
 }
 
 static void stmt_a_creditos(Creditos **creditos, Creditos *prev, sqlite3_stmt *stmt) {
-    *creditos = (Creditos*) malloc(sizeof(Creditos));
+    *creditos = malloc(sizeof(Creditos));
     (*creditos)->prev = prev;
-    (*creditos)->credito = (Credito*) malloc(sizeof(Credito));
+    (*creditos)->credito = malloc(sizeof(Credito));
     (*creditos)->next = NULL;
     stmt_a_credito((*creditos)->credito, stmt);
 
@@ -30,9 +30,9 @@ void stmt_a_pago(Pago *pago, sqlite3_stmt *stmt) {
 }
 
 void stmt_a_pagos(Pagos **pagos, Pagos *prev, sqlite3_stmt *stmt) {
-    *pagos = (Pagos*) malloc(sizeof(Pagos));
+    *pagos = malloc(sizeof(Pagos));
     (*pagos)->prev = prev;
-    (*pagos)->pago = (Pago*) malloc(sizeof(Pago));
+    (*pagos)->pago = malloc(sizeof(Pago));
     (*pagos)->next = NULL;
     stmt_a_pago((*pagos)->pago, stmt);
 
@@ -103,7 +103,7 @@ void insert_pago(Pago *pago) {
 }
 
 Credito *credito_nuevo(Cliente *cliente, int monto, Fecha *pedido) {
-    Credito *credito = (Credito *) malloc(sizeof(Credito));
+    Credito *credito = malloc(sizeof(Credito));
 
     credito->cliente_id = cliente->id;
     credito->monto = monto;
@@ -115,7 +115,7 @@ Credito *credito_nuevo(Cliente *cliente, int monto, Fecha *pedido) {
 }
 
 Pago *pago_nuevo(Credito *credito, int monto, Fecha *fecha_pago) {
-    Pago *pago = (Pago *) malloc(sizeof(Pago));
+    Pago *pago = malloc(sizeof(Pago));
 
     pago->credito_id = credito->id;
     pago->monto = monto;

@@ -10,7 +10,7 @@ static void insert_into_clientes(Cliente *cliente) {
     sqlite3_stmt *insert_stmt = NULL;
     sqlite3_prepare_v2(db(), insert_query, insert_query_length, &insert_stmt, NULL);
 
-    sqlite3_bind_text(insert_stmt, 1, (const char *) cliente->nombre, -1, SQLITE_STATIC);
+    sqlite3_bind_text(insert_stmt, 1, (char*) cliente->nombre, -1, SQLITE_STATIC);
     sqlite3_bind_int64(insert_stmt, 2, timegm(cliente->nacimiento));
     sqlite3_bind_int(insert_stmt, 3, cliente->referente_id);
 
@@ -42,34 +42,35 @@ static void select_cliente_by_id(int id, Cliente **cliente) {
     int row = sqlite3_step(select_by_id_stmt);
 
     if (row == SQLITE_ROW) {
-        *cliente = (Cliente *) malloc(sizeof(Cliente));
+        *cliente = malloc(sizeof(Cliente));
         stmt_a_cliente(*cliente, select_by_id_stmt);
     }
 }
 
 void stmt_a_cliente(Cliente *cliente, sqlite3_stmt *stmt) {
     cliente->id = sqlite3_column_int(stmt, 0);
-    cliente->nombre = sqlite3_column_text(stmt, 1);
+    cliente->nombre = (unsigned char*) sqlite3_column_text(stmt, 1);
     time_t nac = (time_t) sqlite3_column_int(stmt, 2);
     cliente->nacimiento = (Fecha *) gmtime(&nac);
     cliente->referente_id = sqlite3_column_int(stmt, 3);
 }
 
 void stmt_a_clientes(Clientes **clientes, Clientes *prev, sqlite3_stmt *stmt) {
-    *clientes = (Clientes*) malloc(sizeof(Clientes));
-    (*clientes)->prev = prev;
-    (*clientes)->cliente = (Cliente*) malloc(sizeof(Cliente));
-    (*clientes)->next = NULL;
-    stmt_a_cliente((*clientes)->cliente, stmt);
+    *clientes = malloc(sizeof(Clientes));
+    Clientes *actual = *clientes;
+    actual->prev = prev;
+    actual->cliente = malloc(sizeof(Cliente));
+    actual->next = NULL;
+    stmt_a_cliente(actual->cliente, stmt);
 
     int next = sqlite3_step(stmt);
     if (next == SQLITE_ROW) {
-        stmt_a_clientes(&(*clientes)->next, *clientes, stmt);
+        stmt_a_clientes(&(actual->next), actual, stmt);
     }
 }
 
-Cliente* cliente_nuevo_con_referido(const unsigned char *nombre, Fecha *nacimiento, int referente_id) {
-    Cliente *cliente = (Cliente*) malloc(sizeof(Cliente));
+Cliente* cliente_nuevo_con_referido(unsigned char *nombre, Fecha *nacimiento, int referente_id) {
+    Cliente *cliente = malloc(sizeof(Cliente));
     cliente->nombre = nombre;
     cliente->nacimiento = nacimiento;
     cliente->referente_id = referente_id;
@@ -78,7 +79,7 @@ Cliente* cliente_nuevo_con_referido(const unsigned char *nombre, Fecha *nacimien
     return cliente;
 }
 
-Cliente* cliente_nuevo(const unsigned char *nombre, Fecha *nacimiento) {
+Cliente* cliente_nuevo(unsigned char *nombre, Fecha *nacimiento) {
     return cliente_nuevo_con_referido(nombre, nacimiento, 0);
 }
 

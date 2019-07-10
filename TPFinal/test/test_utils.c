@@ -1,7 +1,7 @@
 #include "test_utils.h"
 
 Fecha* una_fecha(int year, int month, int day) {
-    Fecha *nacimiento = (Fecha*) malloc(sizeof(Fecha));
+    Fecha *nacimiento = malloc(sizeof(Fecha));
     nacimiento->tm_year = year - 1900;
     nacimiento->tm_mon = month - 1;
     nacimiento->tm_mday = day;

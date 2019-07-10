@@ -19,8 +19,7 @@ void ejecutarEnDbOFallar(sqlite3 *database, char *sql) {
     int res = sqlite3_exec(database, sql, 0, 0, &error);
 
     if (res != SQLITE_OK) {
-        printf("Error en [%s]: %s\n", sql, error);
-        salir();
+        fprintf(stderr, "Error en [%s]: %s\n", sql, error);
     }
 }
 
@@ -31,8 +30,7 @@ sqlite3 *db() {
     if (db_init == 0) {
         int status = sqlite3_open("./sqlite.db", &database);
         if (status != SQLITE_OK) {
-            printf("Error [%d] abriendo archivo de base de datos. \n", status);
-            salir();
+            fprintf(stderr, "Error [%d] abriendo archivo de base de datos. \n", status);
         }
 
 //        ejecutarEnDbOFallar(database, "PRAGMA foreign_keys ON;");
@@ -79,7 +77,3 @@ Fecha *fecha_hoy() {
     return todayTm;
 }
 
-void salir() {
-    printf("Cerrando...\n");
-    system("exit");
-}

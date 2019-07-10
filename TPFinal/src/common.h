@@ -12,7 +12,6 @@
 typedef struct tm Fecha;
 sqlite3 *db();
 void ejecutarEnDbOFallar(sqlite3 *database, char *sql);
-void salir();
 int last_insert_rowid();
 Fecha *fecha_hoy();
 
