@@ -9,11 +9,8 @@ void stmt_a_cliente(Cliente *cliente, sqlite3_stmt *stmt) {
 }
 
 static void insert_into_clientes(Cliente *cliente) {
-    const char *insert_query = "INSERT INTO clientes(nombre, nacimiento, referente_id) VALUES(?, ?, ?);";
-    const size_t insert_query_length = strlen(insert_query) + 1;
-
     sqlite3_stmt *insert_stmt = NULL;
-    sqlite3_prepare_v2(db(), insert_query, insert_query_length, &insert_stmt, NULL);
+    sqlite3_prepare_v2(db(), INSERT_CLIENTES, INSERT_CLIENTES_LENGTH, &insert_stmt, NULL);
 
     sqlite3_bind_text(insert_stmt, 1, (char*) cliente->nombre, -1, SQLITE_STATIC);
     sqlite3_bind_int64(insert_stmt, 2, timegm(cliente->nacimiento));
@@ -22,13 +19,24 @@ static void insert_into_clientes(Cliente *cliente) {
     sqlite3_step(insert_stmt);
     cliente->id = last_insert_rowid();
 }
+static void select_clientes_busqueda(Cliente *cliente, char *busqueda, void (*callback)(Cliente *)) {
+    sqlite3_stmt *select_stmt = NULL;
+    sqlite3_prepare_v2(db(), SELECT_CLIENTES_BUSQUEDA, SELECT_CLIENTES_BUSQUEDA_LENGTH, &select_stmt, NULL);
+
+    sqlite3_bind_text(select_stmt, 1, busqueda, -1, SQLITE_STATIC);
+
+    int row = sqlite3_step(select_stmt);
+    while (row == SQLITE_ROW) {
+        stmt_a_cliente(cliente, select_stmt);
+        callback(cliente);
+
+        row = sqlite3_step(select_stmt);
+    }
+}
 
 static void select_clientes(Cliente *cliente, void (*callback)(Cliente *)) {
-    const char *select_all_query = "SELECT id, nombre, nacimiento, referente_id FROM clientes;";
-    const size_t select_all_query_length = strlen(select_all_query) + 1;
-
     sqlite3_stmt *select_all_stmt = NULL;
-    sqlite3_prepare_v2(db(), select_all_query, select_all_query_length, &select_all_stmt, NULL);
+    sqlite3_prepare_v2(db(), SELECT_CLIENTES, SELECT_CLIENTES_LENGTH, &select_all_stmt, NULL);
 
     int row = sqlite3_step(select_all_stmt);
     while (row == SQLITE_ROW) {
@@ -40,11 +48,8 @@ static void select_clientes(Cliente *cliente, void (*callback)(Cliente *)) {
 }
 
 static void select_cliente_by_id(int id, Cliente **cliente) {
-    const char *select_by_id_query = "SELECT id, nombre, nacimiento, referente_id FROM clientes WHERE id = ? LIMIT 1;";
-    const size_t select_by_id_query_length = strlen(select_by_id_query) + 1;
-
     sqlite3_stmt * select_by_id_stmt = NULL;
-    sqlite3_prepare_v2(db(), select_by_id_query, select_by_id_query_length, &select_by_id_stmt, NULL);
+    sqlite3_prepare_v2(db(), SELECT_CLIENTE_BY_ID, SELECT_CLIENTE_BY_ID_LENGTH, &select_by_id_stmt, NULL);
 
     sqlite3_bind_int(select_by_id_stmt, 1, id);
     int row = sqlite3_step(select_by_id_stmt);
@@ -88,7 +93,9 @@ void clientes(void (*callback)(Cliente*)) {
 }
 
 void cliente_buscar_nombre(char *busqueda, void (*callback)(Cliente*)) {
-    return;
+    Cliente *cliente = malloc(sizeof(Cliente));
+    select_clientes_busqueda(cliente, busqueda, callback);
+    free(cliente);
 }
 
 void cliente_buscar_edad_rango(int min, int max, void (*callback)(Cliente*)) {
