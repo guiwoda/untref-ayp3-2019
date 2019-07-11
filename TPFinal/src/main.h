@@ -32,6 +32,6 @@ void menu_agregar_credito(Cliente *cliente);
 
 void fecha_a_texto(Fecha *fecha, char *res);
 
-void mostrar_cliente_tabla(Clientes *clientes);
+void mostrar_cliente_tabla(Cliente *cliente);
 
 #endif //TPFINAL_MAIN_H

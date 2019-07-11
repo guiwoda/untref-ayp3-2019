@@ -27,45 +27,48 @@ struct _clientes {
  * @param nombre
  * @param nacimiento
  * @param referente_id
- *
- * @return el cliente agregado.
+ * @param callback
  */
-Cliente* cliente_nuevo_con_referido(unsigned char *nombre, Fecha *nacimiento, int referente_id);
+void cliente_nuevo_con_referido(unsigned char *nombre, Fecha *nacimiento, int referente_id, void (*callback)(Cliente*));
 
 /**
  * Agrega un cliente.
  *
  * @param nombre
  * @param nacimiento
- *
- * @return el cliente agregado.
+ * @param callback
  */
-Cliente* cliente_nuevo(unsigned char *nombre, Fecha *nacimiento);
+void cliente_nuevo(unsigned char *nombre, Fecha *nacimiento, void (*callback)(Cliente*));
 
-Clientes* clientes();
+/**
+ * Lista todos los clientes.
+ *
+ * @param callback
+ */
+void clientes(void (*callback)(Cliente*));
 
 /**
  * Busca un cliente en el índice.
  * @param id
- * @return el cliente, si existe, o {@code NULL}.
+ * @param callback
  */
-Cliente* cliente_indice(int id);
+void cliente_indice(int id, void (*callback)(Cliente*));
 
 /**
  * Busca clientes por nombre.
  * @param busqueda
- * @return los clientes encontrados que concuerden con la búsqueda.
+ * @param callback
  */
-Clientes* cliente_buscar_nombre(char *busqueda);
+void cliente_buscar_nombre(char *busqueda, void (*callback)(Cliente*));
 
 /**
  * Busca clientes en un rango de edad.
  *
  * @param min desde qué edad.
  * @param max hasta qué edad.
- * @return los clientes encontrados que concuerden con la búsqueda.
+ * @param callback
  */
-Clientes* cliente_buscar_edad_rango(int min, int max);
+void cliente_buscar_edad_rango(int min, int max, void (*callback)(Cliente*));
 
 /**
  * Limpia toda la base de datos de clientes.

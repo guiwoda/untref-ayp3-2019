@@ -1,17 +1,16 @@
 #include "main.h"
 
+void mostrar_referido(Cliente *cliente);
+
 void menu_agregar_referido(Cliente *referente) {
     unsigned char *nombre = malloc(sizeof(unsigned char));
     Fecha *nacimiento = malloc(sizeof(Fecha));
 
     pedir_datos_cliente(nombre, nacimiento);
+    cliente_nuevo_con_referido(nombre, nacimiento, referente->id, mostrar_cliente);
 
-    Cliente *cliente = cliente_nuevo_con_referido(nombre, nacimiento, referente->id);
     free(nombre);
     free(nacimiento);
-
-    mostrar_cliente(cliente);
-
 }
 
 void menu_agregar_cliente() {
@@ -20,11 +19,9 @@ void menu_agregar_cliente() {
 
     pedir_datos_cliente(nombre, nacimiento);
 
-    Cliente *cliente = cliente_nuevo(nombre, nacimiento);
+    cliente_nuevo(nombre, nacimiento, mostrar_cliente);
     free(nombre);
     free(nacimiento);
-
-    mostrar_cliente(cliente);
 }
 
 void menu_buscar_cliente() {
@@ -64,13 +61,9 @@ void menu_buscar_cliente() {
 }
 
 void menu_buscar_clientes() {
-    Clientes *todos = clientes();
+    printf("| ID | Nombre | Fecha de nacimiento |\n");
 
-    if (todos != NULL) {
-        printf("| ID | Nombre | Fecha de nacimiento |\n");
-    }
-
-    mostrar_cliente_tabla(todos);
+    clientes(mostrar_cliente_tabla);
 }
 
 void menu_buscar_cliente_edad() {
@@ -82,13 +75,8 @@ void menu_buscar_cliente_edad() {
     printf("Edad maxima...\n");
     scanf("%d", &max);
 
-    Clientes *todos = cliente_buscar_edad_rango(min, max);
-
-    if (todos != NULL) {
-        printf("| ID | Nombre | Fecha de nacimiento |\n");
-    }
-
-    mostrar_cliente_tabla(todos);
+    printf("| ID | Nombre | Fecha de nacimiento |\n");
+    cliente_buscar_edad_rango(min, max, mostrar_cliente_tabla);
 }
 
 void menu_buscar_cliente_nombre() {
@@ -96,13 +84,8 @@ void menu_buscar_cliente_nombre() {
     printf("Ingresar busqueda...\n");
     scanf("%s", busqueda);
 
-    Clientes *todos = cliente_buscar_nombre(busqueda);
-
-    if (todos != NULL) {
-        printf("| ID | Nombre | Fecha de nacimiento |\n");
-    }
-
-    mostrar_cliente_tabla(todos);
+    printf("| ID | Nombre | Fecha de nacimiento |\n");
+    cliente_buscar_nombre(busqueda, mostrar_cliente_tabla);
 }
 
 void menu_buscar_cliente_id() {
@@ -110,13 +93,7 @@ void menu_buscar_cliente_id() {
     printf("Ingrese el ID...\n");
     scanf("%d", &id);
 
-    Cliente *cliente = cliente_indice(id);
-
-    if (cliente != NULL) {
-        mostrar_cliente(cliente);
-    } else {
-        printf("Cliente con ID [%d] no encontrado.", id);
-    }
+    cliente_indice(id, mostrar_cliente);
 }
 
 void pedir_datos_cliente(const unsigned char *nombre, Fecha *nacimiento) {
@@ -131,6 +108,11 @@ void pedir_datos_cliente(const unsigned char *nombre, Fecha *nacimiento) {
 }
 
 void mostrar_cliente(Cliente *cliente) {
+    if (cliente == NULL) {
+        printf("Cliente no encontrado.\n\n");
+        return;
+    }
+
     printf("Nombre: %s\n", cliente->nombre);
 
     char fecha[11];
@@ -147,10 +129,8 @@ void mostrar_cliente(Cliente *cliente) {
 
     printf("Fecha de nacimiento: %s (edad: %d)\n", fecha, edad);
 
-    Cliente *referente = NULL;
     if (cliente->referente_id != 0) {
-        referente = cliente_indice(cliente->referente_id);
-        printf("Referido por: %s\n", referente->nombre);
+        cliente_indice(cliente->referente_id, mostrar_referido);
     }
 
     Creditos *creditos = credito_por_cliente(cliente);
@@ -174,8 +154,8 @@ void mostrar_cliente(Cliente *cliente) {
                 menu_agregar_referido(cliente);
                 break;
             case '2':
-                if (referente != NULL) {
-                    mostrar_cliente(referente);
+                if (cliente->referente_id != 0) {
+                    cliente_indice(cliente->referente_id, mostrar_cliente);
                 }
                 break;
             case '3':
@@ -186,7 +166,11 @@ void mostrar_cliente(Cliente *cliente) {
                 break;
         }
 
-    } while (opcion != '0');
+    } while (opcion != '0' && opcion != '1' && opcion != '2' && opcion != '3');
+}
+
+void mostrar_referido(Cliente *cliente) {
+    printf("Referido por: %s\n", cliente->nombre);
 }
 
 void mostrar_creditos(Creditos *creditos) {
@@ -216,15 +200,14 @@ void fecha_a_texto(Fecha *fecha, char *res) {
     strftime(res, 11, "%d/%m/%Y", fecha);
 }
 
-void mostrar_cliente_tabla(Clientes *clientes) {
-    if (clientes == NULL) {
+void mostrar_cliente_tabla(Cliente *cliente) {
+    if (cliente == NULL) {
         return;
     }
 
     char fecha[11];
-    fecha_a_texto(clientes->cliente->nacimiento, fecha);
-    printf("| %d | %s | %s |\n", clientes->cliente->id, clientes->cliente->nombre, fecha);
-    mostrar_cliente_tabla(clientes->next);
+    fecha_a_texto(cliente->nacimiento, fecha);
+    printf("| %d | %s | %s |\n", cliente->id, cliente->nombre, fecha);
 }
 
 void menu() {

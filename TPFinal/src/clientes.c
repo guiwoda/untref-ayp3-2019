@@ -1,7 +1,12 @@
 #include "clientes.h"
 
-void stmt_a_cliente(Cliente *cliente, sqlite3_stmt *stmt);
-void stmt_a_clientes(Clientes **clientes, Clientes *prev, sqlite3_stmt *stmt);
+void stmt_a_cliente(Cliente *cliente, sqlite3_stmt *stmt) {
+    cliente->id = sqlite3_column_int(stmt, 0);
+    cliente->nombre = (unsigned char*) sqlite3_column_text(stmt, 1);
+    time_t nac = (time_t) sqlite3_column_int(stmt, 2);
+    cliente->nacimiento = (Fecha *) gmtime(&nac);
+    cliente->referente_id = sqlite3_column_int(stmt, 3);
+}
 
 static void insert_into_clientes(Cliente *cliente) {
     const char *insert_query = "INSERT INTO clientes(nombre, nacimiento, referente_id) VALUES(?, ?, ?);";
@@ -18,7 +23,7 @@ static void insert_into_clientes(Cliente *cliente) {
     cliente->id = last_insert_rowid();
 }
 
-static void select_clientes(Clientes **clientes) {
+static void select_clientes(Cliente *cliente, void (*callback)(Cliente *)) {
     const char *select_all_query = "SELECT id, nombre, nacimiento, referente_id FROM clientes;";
     const size_t select_all_query_length = strlen(select_all_query) + 1;
 
@@ -26,8 +31,11 @@ static void select_clientes(Clientes **clientes) {
     sqlite3_prepare_v2(db(), select_all_query, select_all_query_length, &select_all_stmt, NULL);
 
     int row = sqlite3_step(select_all_stmt);
-    if (row == SQLITE_ROW) {
-        stmt_a_clientes(clientes, NULL, select_all_stmt);
+    while (row == SQLITE_ROW) {
+        stmt_a_cliente(cliente, select_all_stmt);
+        callback(cliente);
+
+        row = sqlite3_step(select_all_stmt);
     }
 }
 
@@ -47,62 +55,44 @@ static void select_cliente_by_id(int id, Cliente **cliente) {
     }
 }
 
-void stmt_a_cliente(Cliente *cliente, sqlite3_stmt *stmt) {
-    cliente->id = sqlite3_column_int(stmt, 0);
-    cliente->nombre = (unsigned char*) sqlite3_column_text(stmt, 1);
-    time_t nac = (time_t) sqlite3_column_int(stmt, 2);
-    cliente->nacimiento = (Fecha *) gmtime(&nac);
-    cliente->referente_id = sqlite3_column_int(stmt, 3);
-}
-
-void stmt_a_clientes(Clientes **clientes, Clientes *prev, sqlite3_stmt *stmt) {
-    *clientes = malloc(sizeof(Clientes));
-    Clientes *actual = *clientes;
-    actual->prev = prev;
-    actual->cliente = malloc(sizeof(Cliente));
-    actual->next = NULL;
-    stmt_a_cliente(actual->cliente, stmt);
-
-    int next = sqlite3_step(stmt);
-    if (next == SQLITE_ROW) {
-        stmt_a_clientes(&(actual->next), actual, stmt);
-    }
-}
-
-Cliente* cliente_nuevo_con_referido(unsigned char *nombre, Fecha *nacimiento, int referente_id) {
+void cliente_nuevo_con_referido(unsigned char *nombre, Fecha *nacimiento, int referente_id, void (*callback)(Cliente*)) {
     Cliente *cliente = malloc(sizeof(Cliente));
     cliente->nombre = nombre;
     cliente->nacimiento = nacimiento;
     cliente->referente_id = referente_id;
 
     insert_into_clientes(cliente);
-    return cliente;
+    callback(cliente);
+
+    free(cliente);
 }
 
-Cliente* cliente_nuevo(unsigned char *nombre, Fecha *nacimiento) {
-    return cliente_nuevo_con_referido(nombre, nacimiento, 0);
+void cliente_nuevo(unsigned char *nombre, Fecha *nacimiento, void (*callback)(Cliente*)) {
+    cliente_nuevo_con_referido(nombre, nacimiento, 0, callback);
 }
 
-Cliente* cliente_indice(int id) {
+void cliente_indice(int id, void (*callback)(Cliente*)) {
     Cliente *cliente = NULL;
     select_cliente_by_id(id, &cliente);
+    callback(cliente);
 
-    return cliente;
+    if (cliente != NULL) {
+        free(cliente);
+    }
 }
 
-Clientes* clientes() {
-    Clientes *clientes = NULL;
-    select_clientes(&clientes);
-
-    return clientes;
+void clientes(void (*callback)(Cliente*)) {
+    Cliente *cliente = malloc(sizeof(Cliente));
+    select_clientes(cliente, callback);
+    free(cliente);
 }
 
-Clientes* cliente_buscar_nombre(char *busqueda) {
-    return NULL;
+void cliente_buscar_nombre(char *busqueda, void (*callback)(Cliente*)) {
+    return;
 }
 
-Clientes* cliente_buscar_edad_rango(int min, int max) {
-    return NULL;
+void cliente_buscar_edad_rango(int min, int max, void (*callback)(Cliente*)) {
+    return;
 }
 
 void cliente_borrar_todo() {
